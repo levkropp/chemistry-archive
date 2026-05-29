@@ -22,14 +22,23 @@ export default function VideoCard({ video }: { video: Video }) {
     >
       {/* Thumbnail */}
       <div className="relative aspect-video bg-zinc-800 overflow-hidden">
-        <Image
-          src={video.thumbnail}
-          alt={video.title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          unoptimized
-        />
+        {video.thumbnail ? (
+          <Image
+            src={video.thumbnail}
+            alt={video.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            unoptimized
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-3xl">⚗</div>
+        )}
+        {video.source === "odysee" && (
+          <span className="absolute bottom-1.5 left-1.5 text-[0.6rem] font-semibold px-1.5 py-0.5 rounded bg-[#ef1970]/90 text-white">
+            Odysee
+          </span>
+        )}
         {video.duration > 0 && (
           <span className="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono">
             {fmtDuration(video.duration)}

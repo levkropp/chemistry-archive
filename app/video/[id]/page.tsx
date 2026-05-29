@@ -4,7 +4,7 @@ import { videos, getVideoById, getRelatedVideos, fmtDuration } from "@/lib/data"
 import { TAG_CATEGORIES, TAG_META, type TagCategory } from "@/lib/types";
 import TagChip, { DifficultyBadge } from "@/components/TagChip";
 import VideoCard from "@/components/VideoCard";
-import YouTubeEmbed from "@/components/YouTubeEmbed";
+import VideoEmbed from "@/components/VideoEmbed";
 import Transcript from "@/components/Transcript";
 
 export function generateStaticParams() {
@@ -49,7 +49,7 @@ export default async function VideoPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main column */}
         <div className="lg:col-span-2 flex flex-col gap-5">
-          <YouTubeEmbed id={video.id} title={video.title} thumbnail={video.thumbnail} />
+          <VideoEmbed video={video} />
 
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl font-bold tracking-tight leading-tight">{video.title}</h1>
@@ -68,9 +68,13 @@ export default async function VideoPage({
                 href={video.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto text-red-400 hover:text-red-300 transition-colors"
+                className={`ml-auto transition-colors ${
+                  video.source === "odysee"
+                    ? "text-pink-400 hover:text-pink-300"
+                    : "text-red-400 hover:text-red-300"
+                }`}
               >
-                ↗ Watch on YouTube
+                ↗ Watch on {video.source === "odysee" ? "Odysee" : "YouTube"}
               </a>
             </div>
           </div>

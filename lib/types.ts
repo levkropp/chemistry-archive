@@ -1,5 +1,6 @@
 export type Video = {
   id: string
+  source: "youtube" | "odysee"
   title: string
   channel: string
   channel_slug: string
