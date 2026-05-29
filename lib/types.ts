@@ -58,9 +58,10 @@ export const DIFF_META: Record<string, { label: string; color: string }> = {
 
 // Topic (content domain) colors — chemistry plus crossover hobbies
 export const TOPIC_META: Record<string, { label: string; color: string; dot: string }> = {
-  chemistry:       { label: "Chemistry",     color: "bg-rose-500/15 text-rose-300 border-rose-500/40",   dot: "bg-rose-400" },
-  electronics:     { label: "Electronics",   color: "bg-sky-500/15 text-sky-300 border-sky-500/40",      dot: "bg-sky-400" },
-  "storm-chasing": { label: "Storm Chasing", color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
+  chemistry:       { label: "Chemistry",          color: "bg-rose-500/15 text-rose-300 border-rose-500/40",   dot: "bg-rose-400" },
+  energetics:      { label: "Rockets & Energetics", color: "bg-orange-500/15 text-orange-300 border-orange-500/40", dot: "bg-orange-400" },
+  electronics:     { label: "Electronics",        color: "bg-sky-500/15 text-sky-300 border-sky-500/40",      dot: "bg-sky-400" },
+  "storm-chasing": { label: "Storm Chasing",      color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
 }
 
 // "Meta" tags describe channel housekeeping rather than chemistry content.
