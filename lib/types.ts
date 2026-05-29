@@ -1,0 +1,56 @@
+export type Video = {
+  id: string
+  title: string
+  channel: string
+  channel_slug: string
+  channel_url: string
+  url: string
+  upload_date: string
+  upload_date_fmt: string
+  duration: number
+  description: string
+  thumbnail: string
+  transcript: string
+  reaction_types: string[]
+  reagents: string[]
+  products: string[]
+  equipment: string[]
+  techniques: string[]
+  concepts: string[]
+  safety: string[]
+  difficulty: string
+}
+
+export type Playlist = {
+  slug: string
+  title: string
+  description: string
+  type: "reaction" | "difficulty" | "channel" | "curated"
+  videoIds: string[]
+}
+
+export const TAG_CATEGORIES = [
+  "reaction_types",
+  "reagents",
+  "products",
+  "equipment",
+  "techniques",
+  "concepts",
+] as const
+
+export type TagCategory = (typeof TAG_CATEGORIES)[number]
+
+export const TAG_META: Record<TagCategory, { label: string; color: string; dot: string }> = {
+  reaction_types: { label: "Reaction",   color: "bg-amber-500/15 text-amber-300 border-amber-500/40",   dot: "bg-amber-400" },
+  reagents:       { label: "Reagent",    color: "bg-blue-500/15 text-blue-300 border-blue-500/40",       dot: "bg-blue-400"  },
+  products:       { label: "Product",    color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40", dot: "bg-emerald-400" },
+  equipment:      { label: "Equipment",  color: "bg-violet-500/15 text-violet-300 border-violet-500/40", dot: "bg-violet-400" },
+  techniques:     { label: "Technique",  color: "bg-orange-500/15 text-orange-300 border-orange-500/40", dot: "bg-orange-400" },
+  concepts:       { label: "Concept",    color: "bg-teal-500/15 text-teal-300 border-teal-500/40",       dot: "bg-teal-400"  },
+}
+
+export const DIFF_META: Record<string, { label: string; color: string }> = {
+  beginner:     { label: "Beginner",     color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50" },
+  intermediate: { label: "Intermediate", color: "bg-amber-500/20 text-amber-300 border-amber-500/50" },
+  advanced:     { label: "Advanced",     color: "bg-red-500/20 text-red-300 border-red-500/50" },
+}
