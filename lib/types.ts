@@ -63,6 +63,29 @@ export const TOPIC_META: Record<string, { label: string; color: string; dot: str
   "storm-chasing": { label: "Storm Chasing", color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
 }
 
+// "Meta" tags describe channel housekeeping rather than chemistry content.
+// Hidden from the filter sidebar and cards by default (toggle to reveal).
+export const META_TAGS = new Set<string>([
+  "channel trailer",
+  "channel milestone",
+  "channel update",
+  "channel overview",
+  "return from hiatus",
+  "Q&A",
+  "commentary",
+  "behind the scenes",
+  "holiday special",
+  "laboratory introduction",
+  "laboratory overview",
+  "YouTube censorship",
+  "chemistry community",
+  "demonstration",
+])
+
+export function isMetaTag(tag: string): boolean {
+  return META_TAGS.has(tag)
+}
+
 export function topicMeta(topic: string) {
   return (
     TOPIC_META[topic] ?? {

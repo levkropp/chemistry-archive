@@ -7,6 +7,7 @@ import {
   TAG_META,
   DIFF_META,
   topicMeta,
+  isMetaTag,
   type Video,
   type TagCategory,
 } from "@/lib/types"
@@ -32,6 +33,12 @@ function videoValues(v: Video, dim: string): string[] {
 export default function BrowseClient({ videos, tagIndex, topics, channels }: Props) {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
+  const [showMeta, setShowMeta] = useState(false)
+
+  const hasMetaTags = useMemo(
+    () => TAG_CATEGORIES.some((cat) => tagIndex[cat].some(isMetaTag)),
+    [tagIndex]
+  )
 
   const cycle = (key: string) => {
     setFilters((prev) => {
@@ -169,7 +176,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels }: Pro
 
         {/* Tag categories */}
         {TAG_CATEGORIES.map((cat) => {
-          const tags = tagIndex[cat]
+          const tags = tagIndex[cat].filter((t) => showMeta || !isMetaTag(t))
           if (tags.length === 0) return null
           const meta = TAG_META[cat]
           return (
@@ -189,6 +196,15 @@ export default function BrowseClient({ videos, tagIndex, topics, channels }: Pro
             </FilterSection>
           )
         })}
+
+        {hasMetaTags && (
+          <button
+            onClick={() => setShowMeta((s) => !s)}
+            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-left mt-1"
+          >
+            {showMeta ? "− Hide" : "+ Show"} channel / meta tags
+          </button>
+        )}
       </aside>
 
       {/* Main */}

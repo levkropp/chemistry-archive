@@ -2,11 +2,14 @@ import Link from "next/link"
 import Image from "next/image"
 import TagChip, { DifficultyBadge } from "./TagChip"
 import { fmtDuration } from "@/lib/data"
-import { TAG_CATEGORIES, topicMeta, type Video } from "@/lib/types"
+import { TAG_CATEGORIES, topicMeta, isMetaTag, type Video } from "@/lib/types"
 
 export default function VideoCard({ video }: { video: Video }) {
   const tags = TAG_CATEGORIES.flatMap((cat) =>
-    (video[cat] ?? []).slice(0, cat === "reagents" ? 3 : 2).map((t) => ({ t, cat }))
+    (video[cat] ?? [])
+      .filter((t) => !isMetaTag(t))
+      .slice(0, cat === "reagents" ? 3 : 2)
+      .map((t) => ({ t, cat }))
   )
 
   // Show topic badges only for crossover (non-chemistry) topics
