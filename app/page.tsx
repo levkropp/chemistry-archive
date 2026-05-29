@@ -25,6 +25,13 @@ export default function Home() {
     (a, b) => a.name.localeCompare(b.name)
   );
 
+  // Distinct languages (English first)
+  const langSet = new Set<string>();
+  videos.forEach((v) => v.language && langSet.add(v.language));
+  const languages = Array.from(langSet).sort((a, b) =>
+    a === "English" ? -1 : b === "English" ? 1 : a.localeCompare(b)
+  );
+
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -39,6 +46,7 @@ export default function Home() {
         tagIndex={tagIndex}
         topics={topics}
         channels={channels}
+        languages={languages}
       />
     </div>
   );

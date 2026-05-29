@@ -17,6 +17,7 @@ type Props = {
   tagIndex: Record<TagCategory, string[]>
   topics: string[]
   channels: { slug: string; name: string }[]
+  languages: string[]
 }
 
 // A filter dimension is one of: topic, channel, difficulty, or a tag category.
@@ -26,11 +27,12 @@ type FilterMode = "include" | "exclude"
 function videoValues(v: Video, dim: string): string[] {
   if (dim === "topic") return v.topics
   if (dim === "channel") return [v.channel_slug]
+  if (dim === "language") return v.language ? [v.language] : []
   if (dim === "difficulty") return v.difficulty ? [v.difficulty] : []
   return (v[dim as TagCategory] ?? []) as string[]
 }
 
-export default function BrowseClient({ videos, tagIndex, topics, channels }: Props) {
+export default function BrowseClient({ videos, tagIndex, topics, channels, languages }: Props) {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
   const [showMeta, setShowMeta] = useState(false)
@@ -148,6 +150,24 @@ export default function BrowseClient({ videos, tagIndex, topics, channels }: Pro
                   activeColor="bg-zinc-200/15 text-zinc-100 border-zinc-400/50"
                   mode={filters.get(`channel::${ch.slug}`)}
                   onClick={() => cycle(`channel::${ch.slug}`)}
+                />
+              ))}
+            </div>
+          </FilterSection>
+        )}
+
+        {/* Languages */}
+        {languages.length > 1 && (
+          <FilterSection title="Language">
+            <div className="flex flex-wrap gap-1.5">
+              {languages.map((lang) => (
+                <FilterChip
+                  key={lang}
+                  label={lang}
+                  dotColor="bg-cyan-400"
+                  activeColor="bg-cyan-500/15 text-cyan-300 border-cyan-500/40"
+                  mode={filters.get(`language::${lang}`)}
+                  onClick={() => cycle(`language::${lang}`)}
                 />
               ))}
             </div>
