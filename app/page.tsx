@@ -11,15 +11,35 @@ export default function Home() {
     TAG_CATEGORIES.map((cat) => [cat, allTagValues(cat)])
   ) as Record<TagCategory, string[]>;
 
+  // Distinct topics (sorted, chemistry first)
+  const topicSet = new Set<string>();
+  videos.forEach((v) => v.topics.forEach((t) => topicSet.add(t)));
+  const topics = Array.from(topicSet).sort((a, b) =>
+    a === "chemistry" ? -1 : b === "chemistry" ? 1 : a.localeCompare(b)
+  );
+
+  // Distinct channels
+  const channelMap = new Map<string, string>();
+  videos.forEach((v) => channelMap.set(v.channel_slug, v.channel));
+  const channels = Array.from(channelMap, ([slug, name]) => ({ slug, name })).sort(
+    (a, b) => a.name.localeCompare(b.name)
+  );
+
   return (
     <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Browse the archive</h1>
         <p className="text-sm text-zinc-500 mt-1">
-          {videos.length} videos · filter by reaction, reagent, product, equipment, technique or concept
+          {videos.length} videos across {channels.length} channels · filter by topic,
+          channel, reaction, reagent, product, equipment, technique, concept &amp; difficulty
         </p>
       </div>
-      <BrowseClient videos={sorted} tagIndex={tagIndex} />
+      <BrowseClient
+        videos={sorted}
+        tagIndex={tagIndex}
+        topics={topics}
+        channels={channels}
+      />
     </div>
   );
 }

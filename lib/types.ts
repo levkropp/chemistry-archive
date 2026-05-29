@@ -11,6 +11,7 @@ export type Video = {
   description: string
   thumbnail: string
   transcript: string
+  topics: string[]
   reaction_types: string[]
   reagents: string[]
   products: string[]
@@ -53,4 +54,21 @@ export const DIFF_META: Record<string, { label: string; color: string }> = {
   beginner:     { label: "Beginner",     color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50" },
   intermediate: { label: "Intermediate", color: "bg-amber-500/20 text-amber-300 border-amber-500/50" },
   advanced:     { label: "Advanced",     color: "bg-red-500/20 text-red-300 border-red-500/50" },
+}
+
+// Topic (content domain) colors — chemistry plus crossover hobbies
+export const TOPIC_META: Record<string, { label: string; color: string; dot: string }> = {
+  chemistry:       { label: "Chemistry",     color: "bg-rose-500/15 text-rose-300 border-rose-500/40",   dot: "bg-rose-400" },
+  electronics:     { label: "Electronics",   color: "bg-sky-500/15 text-sky-300 border-sky-500/40",      dot: "bg-sky-400" },
+  "storm-chasing": { label: "Storm Chasing", color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
+}
+
+export function topicMeta(topic: string) {
+  return (
+    TOPIC_META[topic] ?? {
+      label: topic.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      color: "bg-zinc-500/15 text-zinc-300 border-zinc-500/40",
+      dot: "bg-zinc-400",
+    }
+  )
 }

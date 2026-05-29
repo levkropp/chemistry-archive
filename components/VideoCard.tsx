@@ -2,12 +2,15 @@ import Link from "next/link"
 import Image from "next/image"
 import TagChip, { DifficultyBadge } from "./TagChip"
 import { fmtDuration } from "@/lib/data"
-import { TAG_CATEGORIES, type Video } from "@/lib/types"
+import { TAG_CATEGORIES, topicMeta, type Video } from "@/lib/types"
 
 export default function VideoCard({ video }: { video: Video }) {
   const tags = TAG_CATEGORIES.flatMap((cat) =>
     (video[cat] ?? []).slice(0, cat === "reagents" ? 3 : 2).map((t) => ({ t, cat }))
   )
+
+  // Show topic badges only for crossover (non-chemistry) topics
+  const crossoverTopics = video.topics.filter((t) => t !== "chemistry")
 
   return (
     <Link
@@ -32,6 +35,22 @@ export default function VideoCard({ video }: { video: Video }) {
         {video.difficulty && (
           <span className="absolute top-1.5 left-1.5">
             <DifficultyBadge difficulty={video.difficulty} />
+          </span>
+        )}
+        {crossoverTopics.length > 0 && (
+          <span className="absolute top-1.5 right-1.5 flex flex-col gap-1 items-end">
+            {crossoverTopics.map((t) => {
+              const meta = topicMeta(t)
+              return (
+                <span
+                  key={t}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold ${meta.color}`}
+                >
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+                  {meta.label}
+                </span>
+              )
+            })}
           </span>
         )}
       </div>
