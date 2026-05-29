@@ -138,7 +138,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels }: Pro
 
         {/* Channels */}
         {channels.length > 1 && (
-          <FilterSection title="Channels">
+          <FilterSection title="Channels" count={channels.length} scroll>
             <div className="flex flex-wrap gap-1.5">
               {channels.map((ch) => (
                 <FilterChip
@@ -180,7 +180,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels }: Pro
           if (tags.length === 0) return null
           const meta = TAG_META[cat]
           return (
-            <FilterSection key={cat} title={meta.label + "s"}>
+            <FilterSection key={cat} title={meta.label + "s"} count={tags.length} scroll>
               <div className="flex flex-wrap gap-1">
                 {tags.map((tag) => (
                   <FilterChip
@@ -271,13 +271,41 @@ function FilterChip({
   )
 }
 
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+function FilterSection({
+  title,
+  count,
+  scroll = false,
+  defaultOpen = true,
+  children,
+}: {
+  title: string
+  count?: number
+  scroll?: boolean
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-2">
-        {title}
-      </h3>
-      {children}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          {title}
+          {count != null && (
+            <span className="text-zinc-600 font-normal normal-case">({count})</span>
+          )}
+        </span>
+        <span className={`text-zinc-600 transition-transform ${open ? "" : "-rotate-90"}`}>
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div className={scroll ? "max-h-56 overflow-y-auto pr-1 -mr-1" : ""}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
