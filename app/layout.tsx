@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import SafetyBanner from "@/components/SafetyBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,6 +43,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
+        <SafetyBanner />
         <main className="flex-1 max-w-7xl w-full mx-auto px-5 py-6">{children}</main>
         <footer className="border-t border-zinc-800 text-center text-xs text-zinc-600 py-4">
           Archived chemistry videos · preserved for learning

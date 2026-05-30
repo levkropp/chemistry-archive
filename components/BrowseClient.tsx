@@ -176,6 +176,10 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
 
         {/* Difficulty */}
         <FilterSection title="Difficulty">
+          <p className="text-[0.65rem] text-zinc-500 italic mb-2 leading-snug">
+            AI-assessed: how easy the video is to <em>follow along</em>, not how
+            safe or legal to replicate.
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(DIFF_META).map(([diff, meta]) => {
               const count = videos.filter((v) => v.difficulty === diff).length
