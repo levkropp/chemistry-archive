@@ -20,6 +20,7 @@ export type Video = {
   equipment: string[]
   techniques: string[]
   concepts: string[]
+  drug_class: string[]
   safety: string[]
   difficulty: string
 }
@@ -39,6 +40,7 @@ export const TAG_CATEGORIES = [
   "equipment",
   "techniques",
   "concepts",
+  "drug_class",
 ] as const
 
 export type TagCategory = (typeof TAG_CATEGORIES)[number]
@@ -50,6 +52,7 @@ export const TAG_META: Record<TagCategory, { label: string; color: string; dot: 
   equipment:      { label: "Equipment",  color: "bg-violet-500/15 text-violet-300 border-violet-500/40", dot: "bg-violet-400" },
   techniques:     { label: "Technique",  color: "bg-orange-500/15 text-orange-300 border-orange-500/40", dot: "bg-orange-400" },
   concepts:       { label: "Concept",    color: "bg-teal-500/15 text-teal-300 border-teal-500/40",       dot: "bg-teal-400"  },
+  drug_class:     { label: "Drug Class", color: "bg-purple-500/15 text-purple-300 border-purple-500/40", dot: "bg-purple-400" },
 }
 
 export const DIFF_META: Record<string, { label: string; color: string }> = {
@@ -66,6 +69,7 @@ export const TOPIC_META: Record<string, { label: string; color: string; dot: str
   "storm-chasing": { label: "Storm Chasing",      color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
   metallurgy:      { label: "Metallurgy",         color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/40", dot: "bg-yellow-400" },
   gaming:          { label: "Gaming",             color: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", dot: "bg-fuchsia-400" },
+  psychotropics:   { label: "Psychotropics",      color: "bg-purple-500/15 text-purple-300 border-purple-500/40", dot: "bg-purple-400" },
 }
 
 // "Meta" tags describe channel housekeeping rather than chemistry content.
