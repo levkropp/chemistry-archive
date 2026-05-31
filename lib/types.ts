@@ -70,6 +70,7 @@ export const TOPIC_META: Record<string, { label: string; color: string; dot: str
   metallurgy:      { label: "Metallurgy",         color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/40", dot: "bg-yellow-400" },
   gaming:          { label: "Gaming",             color: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", dot: "bg-fuchsia-400" },
   psychotropics:   { label: "Psychotropics",      color: "bg-purple-500/15 text-purple-300 border-purple-500/40", dot: "bg-purple-400" },
+  nuclear:         { label: "Nuclear",            color: "bg-lime-500/15 text-lime-300 border-lime-500/40",       dot: "bg-lime-400"   },
 }
 
 // "Meta" tags describe channel housekeeping rather than chemistry content.
