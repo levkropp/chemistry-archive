@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllPlaylists, getVideoById, fmtDuration } from "@/lib/data";
+import { getAllPlaylists, browseVideos } from "@/lib/data";
 import VideoCard from "@/components/VideoCard";
 
 export function generateStaticParams() {
@@ -26,8 +26,9 @@ export default async function PlaylistPage({
   const playlist = getAllPlaylists().find((p) => p.slug === slug);
   if (!playlist) notFound();
 
+  const byId = new Map(browseVideos.map((v) => [v.id, v]));
   const playlistVideos = playlist.videoIds
-    .map((id) => getVideoById(id))
+    .map((id) => byId.get(id))
     .filter((v): v is NonNullable<typeof v> => Boolean(v));
 
   const totalSecs = playlistVideos.reduce((sum, v) => sum + (v.duration || 0), 0);

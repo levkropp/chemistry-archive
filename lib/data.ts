@@ -3,6 +3,13 @@ import rawVideos from "@/data/videos.json"
 
 export const videos: Video[] = rawVideos as Video[]
 
+// Lightweight copies for list/grid views (home, channel, playlist). Transcripts
+// are up to 4000 chars each and make up the bulk of the embedded page data, but
+// they're only read on individual /video/[id] pages — never in cards or browse
+// search. Stripping them here keeps the statically-embedded payload small so the
+// browse pages load fast.
+export const browseVideos: Video[] = videos.map((v) => ({ ...v, transcript: "" }))
+
 export function getVideoById(id: string): Video | undefined {
   return videos.find((v) => v.id === id)
 }

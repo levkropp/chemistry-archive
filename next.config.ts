@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   basePath: isProd ? `/${repoName}` : "",
   assetPrefix: isProd ? `/${repoName}/` : "",
   images: { unoptimized: true },
+  // Inline Tailwind's CSS into <head> as <style> tags so styles arrive with the
+  // HTML — eliminates the render-blocking CSS request that caused unstyled
+  // content to flash during the heavy initial load. Production builds only.
+  experimental: { inlineCss: true },
 };
 
 export default nextConfig;

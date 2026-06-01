@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import SafetyBanner from "@/components/SafetyBanner";
+import LoadingScreen from "@/components/LoadingScreen";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,6 +32,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
+        <LoadingScreen />
         <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
           <div className="max-w-7xl mx-auto px-5 py-3 flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight whitespace-nowrap">

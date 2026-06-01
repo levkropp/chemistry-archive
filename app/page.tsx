@@ -1,9 +1,9 @@
 import BrowseClient from "@/components/BrowseClient";
-import { videos, allTagValues } from "@/lib/data";
+import { videos, browseVideos, allTagValues } from "@/lib/data";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/types";
 
 export default function Home() {
-  const sorted = [...videos].sort((a, b) =>
+  const sorted = [...browseVideos].sort((a, b) =>
     b.upload_date.localeCompare(a.upload_date)
   );
 

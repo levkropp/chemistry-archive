@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { videos } from "@/lib/data";
+import { videos, browseVideos } from "@/lib/data";
 import VideoCard from "@/components/VideoCard";
 
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export default async function ChannelPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const channelVideos = videos
+  const channelVideos = browseVideos
     .filter((v) => v.channel_slug === name)
     .sort((a, b) => b.upload_date.localeCompare(a.upload_date));
 
