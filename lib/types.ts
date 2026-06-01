@@ -66,7 +66,6 @@ export const TOPIC_META: Record<string, { label: string; color: string; dot: str
   chemistry:       { label: "Chemistry",          color: "bg-rose-500/15 text-rose-300 border-rose-500/40",   dot: "bg-rose-400" },
   energetics:      { label: "Rockets & Energetics", color: "bg-orange-500/15 text-orange-300 border-orange-500/40", dot: "bg-orange-400" },
   electronics:     { label: "Electronics",        color: "bg-sky-500/15 text-sky-300 border-sky-500/40",      dot: "bg-sky-400" },
-  "storm-chasing": { label: "Storm Chasing",      color: "bg-indigo-500/15 text-indigo-300 border-indigo-500/40", dot: "bg-indigo-400" },
   metallurgy:      { label: "Metallurgy",         color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/40", dot: "bg-yellow-400" },
   gaming:          { label: "Gaming",             color: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", dot: "bg-fuchsia-400" },
   psychotropics:   { label: "Psychotropics",      color: "bg-purple-500/15 text-purple-300 border-purple-500/40", dot: "bg-purple-400" },
