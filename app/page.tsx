@@ -1,15 +1,25 @@
 import BrowseClient from "@/components/BrowseClient";
-import { videos, browseVideos, allTagValues } from "@/lib/data";
+import { videos, topTagValues, tagValueCount } from "@/lib/data";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/types";
 
-export default function Home() {
-  const sorted = [...browseVideos].sort((a, b) =>
-    b.upload_date.localeCompare(a.upload_date)
-  );
+// Cap how many values per tag category appear as sidebar filter chips. Some
+// categories have thousands of near-unique values; the long tail stays reachable
+// via the search box (which matches every tag value).
+const FACET_LIMIT = 50;
 
+export default function Home() {
+  // Only small facet data is computed at build time and passed to the client.
+  // The video records themselves are fetched lazily by BrowseClient from a
+  // static index asset, so they are never inlined into this page's HTML.
   const tagIndex = Object.fromEntries(
-    TAG_CATEGORIES.map((cat) => [cat, allTagValues(cat)])
+    TAG_CATEGORIES.map((cat) => [cat, topTagValues(cat, FACET_LIMIT)])
   ) as Record<TagCategory, string[]>;
+
+  // True number of distinct values per category, so the sidebar can show "(N)"
+  // and signal when the list is truncated to the most common values.
+  const tagTotals = Object.fromEntries(
+    TAG_CATEGORIES.map((cat) => [cat, tagValueCount(cat)])
+  ) as Record<TagCategory, number>;
 
   // Distinct topics (sorted, chemistry first)
   const topicSet = new Set<string>();
@@ -42,8 +52,8 @@ export default function Home() {
         </p>
       </div>
       <BrowseClient
-        videos={sorted}
         tagIndex={tagIndex}
+        tagTotals={tagTotals}
         topics={topics}
         channels={channels}
         languages={languages}

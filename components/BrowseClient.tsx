@@ -1,20 +1,21 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import VideoCard from "./VideoCard"
+import VideoGrid from "./VideoGrid"
+import { BASE_PATH } from "@/lib/basePath"
 import {
   TAG_CATEGORIES,
   TAG_META,
   DIFF_META,
   topicMeta,
   isMetaTag,
-  type Video,
+  type BrowseVideo,
   type TagCategory,
 } from "@/lib/types"
 
 type Props = {
-  videos: Video[]
   tagIndex: Record<TagCategory, string[]>
+  tagTotals: Record<TagCategory, number>
   topics: string[]
   channels: { slug: string; name: string }[]
   languages: string[]
@@ -24,7 +25,7 @@ type Props = {
 // Filter keys are "dim::value". Each key is tri-state: off / include / exclude.
 type FilterMode = "include" | "exclude"
 
-function videoValues(v: Video, dim: string): string[] {
+function videoValues(v: BrowseVideo, dim: string): string[] {
   if (dim === "topic") return v.topics
   if (dim === "channel") return [v.channel_slug]
   if (dim === "language") return v.language ? [v.language] : []
@@ -32,11 +33,36 @@ function videoValues(v: Video, dim: string): string[] {
   return (v[dim as TagCategory] ?? []) as string[]
 }
 
-export default function BrowseClient({ videos, tagIndex, topics, channels, languages }: Props) {
+export default function BrowseClient({ tagIndex, tagTotals, topics, channels, languages }: Props) {
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
   const [showMeta, setShowMeta] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // The browse records are fetched at runtime from a static index asset rather
+  // than inlined into the page HTML — keeps the initial payload tiny. `null`
+  // while loading; `loadError` flips on failure (with a retry via reloadKey).
+  const [records, setRecords] = useState<BrowseVideo[] | null>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch(`${BASE_PATH}/data/index.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then((data: BrowseVideo[]) => {
+        if (!cancelled) setRecords(data)
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [reloadKey])
 
   // Lock body scroll while the mobile filter drawer is open.
   useEffect(() => {
@@ -53,6 +79,15 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
     [tagIndex]
   )
 
+  // Difficulty counts come from the fetched records (empty until loaded).
+  const diffCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const v of records ?? []) {
+      if (v.difficulty) counts[v.difficulty] = (counts[v.difficulty] ?? 0) + 1
+    }
+    return counts
+  }, [records])
+
   const cycle = (key: string) => {
     setFilters((prev) => {
       const next = new Map(prev)
@@ -65,6 +100,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
   }
 
   const filtered = useMemo(() => {
+    if (!records) return []
     // Group active filters by dimension
     const includes: Record<string, string[]> = {}
     const excludes: Array<[string, string]> = []
@@ -75,7 +111,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
       else excludes.push([dim, val])
     }
 
-    return videos.filter((v) => {
+    return records.filter((v) => {
       // OR within a dimension, AND across dimensions
       for (const dim in includes) {
         const have = videoValues(v, dim)
@@ -100,7 +136,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
       }
       return true
     })
-  }, [videos, filters, search])
+  }, [records, filters, search])
 
   const clearAll = () => {
     setFilters(new Map())
@@ -216,8 +252,8 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
           </p>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(DIFF_META).map(([diff, meta]) => {
-              const count = videos.filter((v) => v.difficulty === diff).length
-              if (count === 0) return null
+              // Hide a level only once we know it has zero videos (post-load).
+              if (records && !diffCounts[diff]) return null
               return (
                 <FilterChip
                   key={diff}
@@ -232,13 +268,15 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
           </div>
         </FilterSection>
 
-        {/* Tag categories */}
+        {/* Tag categories — sidebar shows the most common values; the rest of the
+            long tail is reachable via the search box (it matches all tag values). */}
         {TAG_CATEGORIES.map((cat) => {
           const tags = tagIndex[cat].filter((t) => showMeta || !isMetaTag(t))
           if (tags.length === 0) return null
           const meta = TAG_META[cat]
+          const truncated = tagTotals[cat] > tagIndex[cat].length
           return (
-            <FilterSection key={cat} title={meta.label + "s"} count={tags.length} scroll>
+            <FilterSection key={cat} title={meta.label + "s"} count={tagTotals[cat]} scroll>
               <div className="flex flex-wrap gap-1">
                 {tags.map((tag) => (
                   <FilterChip
@@ -251,6 +289,11 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
                   />
                 ))}
               </div>
+              {truncated && (
+                <p className="text-[0.65rem] text-zinc-600 italic mt-1.5 leading-snug">
+                  Top {tagIndex[cat].length} shown — search for any of the others.
+                </p>
+              )}
             </FilterSection>
           )
         })}
@@ -276,7 +319,7 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
             className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/70 transition-colors"
           />
           <span className="text-xs text-zinc-500 whitespace-nowrap">
-            {filtered.length} / {videos.length}
+            {records ? `${filtered.length} / ${records.length}` : "…"}
           </span>
           <button
             onClick={() => setDrawerOpen(true)}
@@ -297,18 +340,50 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
           </button>
         </div>
 
-        {filtered.length === 0 ? (
+        {loadError ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-sm text-zinc-500 py-20">
+            <p>Couldn’t load the archive index.</p>
+            <button
+              onClick={() => {
+                setLoadError(false)
+                setRecords(null)
+                setReloadKey((k) => k + 1)
+              }}
+              className="text-emerald-400 hover:text-emerald-300 border border-zinc-700 hover:border-emerald-500/50 rounded-lg px-4 py-2 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : records === null ? (
+          <GridSkeleton />
+        ) : filtered.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm py-20">
             No videos match the current filters.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((v) => (
-              <VideoCard key={v.id} video={v} />
-            ))}
-          </div>
+          <VideoGrid videos={filtered} />
         )}
       </div>
+    </div>
+  )
+}
+
+// Placeholder grid shown while the browse index is being fetched.
+function GridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden animate-pulse"
+        >
+          <div className="aspect-video bg-zinc-800" />
+          <div className="flex flex-col gap-2 p-3">
+            <div className="h-3.5 bg-zinc-800 rounded w-5/6" />
+            <div className="h-3 bg-zinc-800 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

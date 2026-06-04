@@ -121,3 +121,28 @@ export function allTagValues(cat: TagCategory): string[] {
   videos.forEach((v) => v[cat].forEach((t) => seen.add(t)))
   return Array.from(seen).sort()
 }
+
+// Count how many distinct values a category has across the archive.
+export function tagValueCount(cat: TagCategory): number {
+  const seen = new Set<string>()
+  videos.forEach((v) => v[cat].forEach((t) => seen.add(t)))
+  return seen.size
+}
+
+// The N most common tag values for a category (by number of videos), sorted
+// alphabetically for scanning. Some categories have thousands of near-unique
+// values (e.g. `concepts` ≈ titles) — rendering every one as a sidebar filter
+// chip bloats the page and isn't useful, since a chip matching a single video
+// is no better than typing it into search (which matches all tag values). So
+// the sidebar shows only the most-used values; the long tail stays searchable.
+export function topTagValues(cat: TagCategory, n: number): string[] {
+  const counts = new Map<string, number>()
+  videos.forEach((v) =>
+    v[cat].forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1))
+  )
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, n)
+    .map(([t]) => t)
+    .sort((a, b) => a.localeCompare(b))
+}

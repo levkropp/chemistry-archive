@@ -2,9 +2,9 @@ import Link from "next/link"
 import Image from "next/image"
 import TagChip, { DifficultyBadge } from "./TagChip"
 import { fmtDuration } from "@/lib/data"
-import { TAG_CATEGORIES, topicMeta, isMetaTag, type Video } from "@/lib/types"
+import { TAG_CATEGORIES, topicMeta, isMetaTag, type BrowseVideo } from "@/lib/types"
 
-export default function VideoCard({ video }: { video: Video }) {
+export default function VideoCard({ video }: { video: BrowseVideo }) {
   const tags = TAG_CATEGORIES.flatMap((cat) =>
     (video[cat] ?? [])
       .filter((t) => !isMetaTag(t))

@@ -25,6 +25,11 @@ export type Video = {
   difficulty: string
 }
 
+// Slim record used by browse/list/grid views and the lazily-fetched index. Omits
+// the transcript (only needed on individual /video/[id] pages), so the browse
+// payload stays small. Cards, search, and filters never read the transcript.
+export type BrowseVideo = Omit<Video, "transcript">
+
 export type Playlist = {
   slug: string
   title: string

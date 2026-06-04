@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPlaylists, browseVideos } from "@/lib/data";
-import VideoCard from "@/components/VideoCard";
+import VideoGrid from "@/components/VideoGrid";
 
 export function generateStaticParams() {
   return getAllPlaylists().map((p) => ({ slug: p.slug }));
@@ -48,11 +48,7 @@ export default async function PlaylistPage({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {playlistVideos.map((v) => (
-          <VideoCard key={v.id} video={v} />
-        ))}
-      </div>
+      <VideoGrid videos={playlistVideos} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { videos, browseVideos } from "@/lib/data";
-import VideoCard from "@/components/VideoCard";
+import VideoGrid from "@/components/VideoGrid";
 
 export function generateStaticParams() {
   const slugs = Array.from(new Set(videos.map((v) => v.channel_slug)));
@@ -55,11 +55,7 @@ export default async function ChannelPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {channelVideos.map((v) => (
-          <VideoCard key={v.id} video={v} />
-        ))}
-      </div>
+      <VideoGrid videos={channelVideos} />
     </div>
   );
 }
