@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import VideoCard from "./VideoCard"
 import {
   TAG_CATEGORIES,
@@ -36,6 +36,17 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
   const [showMeta, setShowMeta] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Lock body scroll while the mobile filter drawer is open.
+  useEffect(() => {
+    if (!drawerOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [drawerOpen])
 
   const hasMetaTags = useMemo(
     () => TAG_CATEGORIES.some((cat) => tagIndex[cat].some(isMetaTag)),
@@ -100,13 +111,36 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
 
   return (
     <div className="flex gap-6 min-h-0">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 flex flex-col gap-5 overflow-y-auto pr-1 max-h-[calc(100vh-9rem)] sticky top-20">
-        <div className="flex items-center justify-between">
+      {/* Mobile backdrop */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={() => setDrawerOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — static on desktop, slide-out drawer on mobile */}
+      <aside
+        className={`flex flex-col gap-5 overflow-y-auto
+          fixed inset-y-0 right-0 z-40 w-80 max-w-[85vw] bg-zinc-950 border-l border-zinc-800 p-5 pt-4
+          transition-transform duration-300 ease-out
+          ${drawerOpen ? "translate-x-0" : "translate-x-full"}
+          lg:static lg:z-auto lg:w-64 lg:max-w-none lg:shrink-0 lg:bg-transparent lg:border-0 lg:p-0 lg:pr-1
+          lg:translate-x-0 lg:max-h-[calc(100vh-9rem)] lg:sticky lg:top-20`}
+      >
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-zinc-500">
             Click: <span className="text-emerald-400">include</span> →{" "}
             <span className="text-red-400">exclude</span> → off
           </span>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            className="lg:hidden text-zinc-400 hover:text-emerald-300 text-xl leading-none px-1 -mt-0.5"
+            aria-label="Close filters"
+          >
+            ✕
+          </button>
         </div>
         {hasFilters && (
           <button
@@ -244,6 +278,23 @@ export default function BrowseClient({ videos, tagIndex, topics, channels, langu
           <span className="text-xs text-zinc-500 whitespace-nowrap">
             {filtered.length} / {videos.length}
           </span>
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="lg:hidden flex items-center gap-1.5 shrink-0 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 hover:border-emerald-500/60 hover:text-emerald-300 transition-colors"
+            aria-label="Open filters"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            Filters
+            {filters.size > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] rounded-full bg-emerald-500/20 text-emerald-300 text-[0.65rem] font-semibold px-1">
+                {filters.size}
+              </span>
+            )}
+          </button>
         </div>
 
         {filtered.length === 0 ? (
