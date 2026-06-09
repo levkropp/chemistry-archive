@@ -71,10 +71,17 @@ export default async function VideoPage({
                 className={`ml-auto transition-colors ${
                   video.source === "odysee"
                     ? "text-pink-400 hover:text-pink-300"
-                    : "text-red-400 hover:text-red-300"
+                    : video.source === "archive"
+                      ? "text-sky-400 hover:text-sky-300"
+                      : "text-red-400 hover:text-red-300"
                 }`}
               >
-                ↗ Watch on {video.source === "odysee" ? "Odysee" : "YouTube"}
+                ↗ Watch on{" "}
+                {video.source === "odysee"
+                  ? "Odysee"
+                  : video.source === "archive"
+                    ? "archive.org"
+                    : "YouTube"}
               </a>
             </div>
           </div>

@@ -39,6 +39,11 @@ export default function VideoCard({ video }: { video: BrowseVideo }) {
             Odysee
           </span>
         )}
+        {video.source === "archive" && (
+          <span className="absolute bottom-1.5 left-1.5 text-[0.6rem] font-semibold px-1.5 py-0.5 rounded bg-sky-600/90 text-white">
+            archive.org
+          </span>
+        )}
         {video.duration > 0 && (
           <span className="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono">
             {fmtDuration(video.duration)}

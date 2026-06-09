@@ -1,6 +1,6 @@
 export type Video = {
   id: string
-  source: "youtube" | "odysee"
+  source: "youtube" | "odysee" | "archive"
   language: string
   title: string
   channel: string
