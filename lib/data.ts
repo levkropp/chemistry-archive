@@ -16,8 +16,9 @@ export function getVideoById(id: string): Video | undefined {
 
 export function fmtDuration(secs: number): string {
   if (!secs) return ""
-  const m = Math.floor(secs / 60)
-  const s = secs % 60
+  const total = Math.round(secs) // archive.org reports float seconds (e.g. 327.96)
+  const m = Math.floor(total / 60)
+  const s = total % 60
   return `${m}:${String(s).padStart(2, "0")}`
 }
 
