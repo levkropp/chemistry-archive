@@ -16,6 +16,7 @@ export type LocalKeepRecord = {
   reasons: string[]
   title?: string
   channel?: string
+  mp4_path?: string
 }
 
 export type LocalKeepAPI = {
@@ -29,6 +30,10 @@ declare global {
       isDesktop: boolean
       savedChannels: SavedChannelsAPI
       localKeep: LocalKeepAPI
+      // Returns an app://local/<id>.<ext> URL if the video has a local MP4
+      // on disk per the keep-list, otherwise null. The desktop shell's main
+      // process serves those URLs from the archives/ directory.
+      getLocalVideoUrl: (id: string) => string | null
     }
   }
 }
