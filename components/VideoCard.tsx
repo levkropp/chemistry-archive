@@ -3,6 +3,7 @@ import Image from "next/image"
 import TagChip, { DifficultyBadge } from "./TagChip"
 import { fmtDuration } from "@/lib/data"
 import { TAG_CATEGORIES, topicMeta, isMetaTag, type BrowseVideo } from "@/lib/types"
+import { getKeepEntrySync, reasonLabel } from "@/lib/localKeep"
 
 export default function VideoCard({ video }: { video: BrowseVideo }) {
   const tags = TAG_CATEGORIES.flatMap((cat) =>
@@ -14,6 +15,13 @@ export default function VideoCard({ video }: { video: BrowseVideo }) {
 
   // Show topic badges only for crossover (non-chemistry) topics
   const crossoverTopics = video.topics.filter((t) => t !== "chemistry")
+
+  // Keep-list label — falls back to null in a normal browser (still async fetched).
+  // Synchronous only inside the Electron desktop shell; laptops the badge there
+  // is shown for every at-risk video, so users see which cards are flagged
+  // for local preservation at a glance.
+  const keep = getKeepEntrySync(video.id)
+  const keepLabel = keep?.keep_local ? reasonLabel(keep.reasons || []) : ""
 
   return (
     <Link
@@ -44,6 +52,14 @@ export default function VideoCard({ video }: { video: BrowseVideo }) {
             archive.org
           </span>
         )}
+        {keepLabel && (
+          <span
+            className="absolute top-1.5 right-1.5 text-[0.6rem] font-semibold px-1.5 py-0.5 rounded bg-amber-500/90 text-zinc-950"
+            title={`Curator recommends keeping a local copy: ${keep?.reasons || []}`}
+          >
+            ★ {keepLabel}
+          </span>
+        )}
         {video.duration > 0 && (
           <span className="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono">
             {fmtDuration(video.duration)}
@@ -54,7 +70,7 @@ export default function VideoCard({ video }: { video: BrowseVideo }) {
             <DifficultyBadge difficulty={video.difficulty} />
           </span>
         )}
-        {crossoverTopics.length > 0 && (
+        {crossoverTopics.length > 0 && keepLabel === "" && (
           <span className="absolute top-1.5 right-1.5 flex flex-col gap-1 items-end">
             {crossoverTopics.map((t) => {
               const meta = topicMeta(t)

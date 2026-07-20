@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import VideoGrid from "./VideoGrid"
 import { BASE_PATH } from "@/lib/basePath"
+import { isDesktop, getSavedChannelsAPI } from "@/lib/desktop"
 import {
   TAG_CATEGORIES,
   TAG_META,
@@ -38,6 +39,33 @@ export default function BrowseClient({ tagIndex, tagTotals, topics, channels, la
   const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
   const [showMeta, setShowMeta] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Saved channels — only meaningful when running inside the Electron desktop
+  // shell (window.desktop exposed by preload.js). In a normal browser this stays
+  // null and the star UI is hidden, so the same code paths serve both contexts.
+  // A separate "saved-only" toggle (only shown in desktop) folds the saved set
+  // into the active filters.
+  const [savedChannels, setSavedChannels] = useState<string[] | null>(null)
+  const [savedOnly, setSavedOnly] = useState(false)
+
+  useEffect(() => {
+    const api = getSavedChannelsAPI()
+    if (!api) return
+    let unsub: (() => void) | undefined
+    api.get().then((chans) => {
+      setSavedChannels(chans)
+      unsub = api.onChange((next) => setSavedChannels(next))
+    })
+    return () => {
+      if (unsub) unsub()
+    }
+  }, [])
+
+  const toggleSaveChannel = async (slug: string) => {
+    const api = getSavedChannelsAPI()
+    if (!api) return
+    await api.toggle(slug)
+  }
 
   // The browse records are fetched at runtime from a static index asset rather
   // than inlined into the page HTML — keeps the initial payload tiny. `null`
@@ -112,6 +140,8 @@ export default function BrowseClient({ tagIndex, tagTotals, topics, channels, la
     }
 
     return records.filter((v) => {
+      // "Saved only" desktop filter — restrict to channels the user has starred.
+      if (savedOnly && savedChannels && !savedChannels.includes(v.channel_slug)) return false
       // OR within a dimension, AND across dimensions
       for (const dim in includes) {
         const have = videoValues(v, dim)
@@ -136,7 +166,7 @@ export default function BrowseClient({ tagIndex, tagTotals, topics, channels, la
       }
       return true
     })
-  }, [records, filters, search])
+  }, [records, filters, search, savedChannels, savedOnly])
 
   const clearAll = () => {
     setFilters(new Map())
@@ -208,20 +238,54 @@ export default function BrowseClient({ tagIndex, tagTotals, topics, channels, la
           </FilterSection>
         )}
 
+        {/* Saved channels — desktop only */}
+        {isDesktop() && savedChannels !== null && savedChannels.length > 0 && (
+          <FilterSection title="★ Saved Channels" count={savedChannels.length}>
+            <label className="flex items-center gap-2 text-xs text-zinc-400 mb-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={savedOnly}
+                onChange={(e) => setSavedOnly(e.target.checked)}
+                className="accent-emerald-500"
+              />
+              <span>Show only my saved channels</span>
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {savedChannels.map((slug) => {
+                const ch = channels.find((c) => c.slug === slug)
+                if (!ch) return null
+                return (
+                  <SavedChannelChip
+                    key={slug}
+                    label={ch.name}
+                    active={filters.get(`channel::${slug}`) === "include"}
+                    onFilter={() => cycle(`channel::${slug}`)}
+                    onUnsave={() => toggleSaveChannel(slug)}
+                  />
+                )
+              })}
+            </div>
+          </FilterSection>
+        )}
+
         {/* Channels */}
         {channels.length > 1 && (
           <FilterSection title="Channels" count={channels.length} scroll>
             <div className="flex flex-wrap gap-1.5">
-              {channels.map((ch) => (
-                <FilterChip
-                  key={ch.slug}
-                  label={ch.name}
-                  dotColor="bg-zinc-400"
-                  activeColor="bg-zinc-200/15 text-zinc-100 border-zinc-400/50"
-                  mode={filters.get(`channel::${ch.slug}`)}
-                  onClick={() => cycle(`channel::${ch.slug}`)}
-                />
-              ))}
+              {channels.map((ch) => {
+                const isSaved = savedChannels?.includes(ch.slug) ?? false
+                return (
+                  <ChannelChip
+                    key={ch.slug}
+                    label={ch.name}
+                    mode={filters.get(`channel::${ch.slug}`)}
+                    onClick={() => cycle(`channel::${ch.slug}`)}
+                    saved={isSaved}
+                    canSave={isDesktop()}
+                    onToggleSave={() => toggleSaveChannel(ch.slug)}
+                  />
+                )
+              })}
             </div>
           </FilterSection>
         )}
@@ -417,6 +481,95 @@ function FilterChip({
         dotColor && <span className={`inline-block w-1.5 h-1.5 rounded-full ${dotColor}`} />
       )}
       {label}
+    </span>
+  )
+}
+
+// Channel chip — same as a FilterChip for cycling include/exclude/off, with an
+// optional ★ toggle at the right edge. The star is only rendered inside the
+// desktop app (`canSave=true`); clicking it does NOT toggle the filter, only
+// the saved-channel state. Saved channels get a gold border + ★ prefix.
+function ChannelChip({
+  label,
+  mode,
+  onClick,
+  saved,
+  canSave,
+  onToggleSave,
+}: {
+  label: string
+  mode: FilterMode | undefined
+  onClick: () => void
+  saved: boolean
+  canSave: boolean
+  onToggleSave: () => void
+}) {
+  const base =
+    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-all cursor-pointer select-none"
+  let cls: string
+  if (mode === "include") cls = "bg-zinc-200/15 text-zinc-100 border-zinc-400/50 scale-105"
+  else if (mode === "exclude") cls = "bg-red-500/15 text-red-300 border-red-500/50 line-through"
+  else if (saved) cls = "border-amber-500/50 text-amber-200 hover:border-amber-400"
+  else cls = "border-zinc-700 text-zinc-400 hover:border-zinc-500"
+
+  return (
+    <span className={`${base} ${cls}`} onClick={onClick}>
+      {saved && <span className="text-amber-400 text-[0.7em] leading-none">★</span>}
+      <span>{label}</span>
+      {canSave && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleSave()
+          }}
+          title={saved ? "Unsave channel" : "Save channel"}
+          className={`ml-0.5 -mr-1 px-0.5 text-[0.7em] leading-none cursor-pointer ${
+            saved ? "text-amber-400 hover:text-amber-300" : "text-zinc-600 hover:text-amber-400"
+          }`}
+        >
+          {saved ? "★" : "☆"}
+        </button>
+      )}
+    </span>
+  )
+}
+
+// Saved-channel chip in the dedicated "★ Saved Channels" section — clicking the
+// body toggles the include filter; the ✕ on the right unsaves.
+function SavedChannelChip({
+  label,
+  active,
+  onFilter,
+  onUnsave,
+}: {
+  label: string
+  active: boolean
+  onFilter: () => void
+  onUnsave: () => void
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-all cursor-pointer select-none ${
+        active
+          ? "bg-amber-500/20 text-amber-200 border-amber-500/60 scale-105"
+          : "border-amber-500/40 text-amber-200 hover:border-amber-400"
+      }`}
+      onClick={onFilter}
+    >
+      <span className="text-amber-400 text-[0.7em] leading-none">★</span>
+      <span>{label}</span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          onUnsave()
+        }}
+        title="Remove from saved"
+        className="ml-0.5 -mr-1 px-0.5 text-[0.7em] leading-none text-amber-300/80 hover:text-red-400 cursor-pointer"
+      >
+        ✕
+      </button>
     </span>
   )
 }
