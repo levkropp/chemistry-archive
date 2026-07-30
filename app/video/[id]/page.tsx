@@ -5,6 +5,7 @@ import { TAG_CATEGORIES, TAG_META, type TagCategory } from "@/lib/types";
 import TagChip, { DifficultyBadge } from "@/components/TagChip";
 import VideoCard from "@/components/VideoCard";
 import VideoEmbed from "@/components/VideoEmbed";
+import LostVideoCard from "@/components/LostVideoCard";
 import Transcript from "@/components/Transcript";
 
 export function generateStaticParams() {
@@ -35,6 +36,12 @@ export default async function VideoPage({
 
   const related = getRelatedVideos(video, 6);
 
+  // Lost media: YouTube original is gone and no mirror exists — the embed
+  // would be a dead iframe, so show the lost-video card instead.
+  const isLost =
+    (video.youtube_status === "deleted" || video.youtube_status === "private") &&
+    !(video.alternates && video.alternates.length > 0);
+
   const tagSections = TAG_CATEGORIES.map((cat) => ({
     cat,
     values: video[cat] ?? [],
@@ -49,7 +56,7 @@ export default async function VideoPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main column */}
         <div className="lg:col-span-2 flex flex-col gap-5">
-          <VideoEmbed video={video} />
+          {isLost ? <LostVideoCard video={video} /> : <VideoEmbed video={video} />}
 
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl font-bold tracking-tight leading-tight">{video.title}</h1>
@@ -64,25 +71,32 @@ export default async function VideoPage({
               {video.upload_date_fmt && <span>· {video.upload_date_fmt}</span>}
               {video.duration > 0 && <span>· {fmtDuration(video.duration)}</span>}
               {video.difficulty && <DifficultyBadge difficulty={video.difficulty} />}
-              <a
-                href={video.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`ml-auto transition-colors ${
-                  video.source === "odysee"
-                    ? "text-pink-400 hover:text-pink-300"
+              {!isLost && (
+                <a
+                  href={video.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`ml-auto transition-colors ${
+                    video.source === "odysee"
+                      ? "text-pink-400 hover:text-pink-300"
+                      : video.source === "archive"
+                        ? "text-sky-400 hover:text-sky-300"
+                        : "text-red-400 hover:text-red-300"
+                  }`}
+                >
+                  ↗ Watch on{" "}
+                  {video.source === "odysee"
+                    ? "Odysee"
                     : video.source === "archive"
-                      ? "text-sky-400 hover:text-sky-300"
-                      : "text-red-400 hover:text-red-300"
-                }`}
-              >
-                ↗ Watch on{" "}
-                {video.source === "odysee"
-                  ? "Odysee"
-                  : video.source === "archive"
-                    ? "archive.org"
-                    : "YouTube"}
-              </a>
+                      ? "archive.org"
+                      : "YouTube"}
+                </a>
+              )}
+              {isLost && (
+                <span className="ml-auto text-amber-500/80 text-xs font-medium">
+                  taken down by YouTube
+                </span>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,15 @@
+export type SourceKind = "youtube" | "odysee" | "archive"
+
+// An alternate host serving the same video (e.g. the Odysee mirror of a
+// YouTube upload). `url` is the public watch URL; embed URLs are derived.
+export type AlternateSource = {
+  source: SourceKind
+  url: string
+}
+
 export type Video = {
   id: string
-  source: "youtube" | "odysee" | "archive"
+  source: SourceKind
   language: string
   title: string
   channel: string
@@ -23,6 +32,14 @@ export type Video = {
   drug_class: string[]
   safety: string[]
   difficulty: string
+  alternates?: AlternateSource[]
+  // YouTube availability from archives/youtube_status.json — "deleted" or
+  // "private" when the original has been taken down. Absent = still up (or
+  // not a YouTube video / not yet probed).
+  youtube_status?: string
+  // Hand-written reconstruction of a lost video's content (from the surviving
+  // transcript), shown on the LostVideoCard when no playable copy exists.
+  lost_note?: string
 }
 
 // Slim record used by browse/list/grid views and the lazily-fetched index. Omits
