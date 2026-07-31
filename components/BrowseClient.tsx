@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import VideoGrid from "./VideoGrid"
 import { BASE_PATH } from "@/lib/basePath"
 import { isDesktop, getSavedChannelsAPI } from "@/lib/desktop"
@@ -35,8 +36,21 @@ function videoValues(v: BrowseVideo, dim: string): string[] {
 }
 
 export default function BrowseClient({ tagIndex, tagTotals, topics, channels, languages }: Props) {
-  const [search, setSearch] = useState("")
-  const [filters, setFilters] = useState<Map<string, FilterMode>>(new Map())
+  // Deep links into a pre-filtered view, e.g. from SummaryCard reagent links:
+  //   /?f=reagents::potassium%20chlorate   (repeatable; each becomes an
+  //   include-filter) and /?q=text to prefill the search box. Read via lazy
+  //   state initializers so they seed the first render but stay user-editable.
+  const searchParams = useSearchParams()
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "")
+  const [filters, setFilters] = useState<Map<string, FilterMode>>(
+    () =>
+      new Map(
+        searchParams
+          .getAll("f")
+          .filter((f) => f.includes("::"))
+          .map((f) => [f, "include" as FilterMode])
+      )
+  )
   const [showMeta, setShowMeta] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
 

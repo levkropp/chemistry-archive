@@ -40,6 +40,11 @@ export type Video = {
   // Hand-written reconstruction of a lost video's content (from the surviving
   // transcript), shown on the LostVideoCard when no playable copy exists.
   lost_note?: string
+  // Hand-written summary card: prose with [[category:tag]] / [[category:tag|display]]
+  // link tokens (rendered as browse-filter links by SummaryCard), plus reaction
+  // equations in plain text.
+  summary?: string
+  equations?: string[]
 }
 
 // Slim record used by browse/list/grid views and the lazily-fetched index. Omits

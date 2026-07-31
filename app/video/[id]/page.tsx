@@ -6,6 +6,7 @@ import TagChip, { DifficultyBadge } from "@/components/TagChip";
 import VideoCard from "@/components/VideoCard";
 import VideoEmbed from "@/components/VideoEmbed";
 import LostVideoCard from "@/components/LostVideoCard";
+import SummaryCard from "@/components/SummaryCard";
 import Transcript from "@/components/Transcript";
 
 export function generateStaticParams() {
@@ -113,6 +114,7 @@ export default async function VideoPage({
 
         {/* Sidebar: tags */}
         <aside className="flex flex-col gap-5">
+          <SummaryCard video={video} />
           {video.safety.length > 0 && (
             <div className="rounded-xl border border-red-900/50 bg-red-950/30 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-2">

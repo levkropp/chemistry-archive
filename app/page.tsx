@@ -1,4 +1,5 @@
 import BrowseClient from "@/components/BrowseClient";
+import { Suspense } from "react";
 import { videos, topTagValues, tagValueCount } from "@/lib/data";
 import { TAG_CATEGORIES, type TagCategory } from "@/lib/types";
 
@@ -51,13 +52,17 @@ export default function Home() {
           channel, reaction, reagent, product, equipment, technique, concept &amp; difficulty
         </p>
       </div>
-      <BrowseClient
-        tagIndex={tagIndex}
-        tagTotals={tagTotals}
-        topics={topics}
-        channels={channels}
-        languages={languages}
-      />
+      {/* Suspense boundary required for BrowseClient's useSearchParams (deep
+          links like /?f=reagents::x) under static export prerendering. */}
+      <Suspense>
+        <BrowseClient
+          tagIndex={tagIndex}
+          tagTotals={tagTotals}
+          topics={topics}
+          channels={channels}
+          languages={languages}
+        />
+      </Suspense>
     </div>
   );
 }
