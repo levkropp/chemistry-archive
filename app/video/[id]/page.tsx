@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { videos, getVideoById, getRelatedVideos, fmtDuration } from "@/lib/data";
-import { TAG_CATEGORIES, TAG_META, type TagCategory } from "@/lib/types";
+import { TAG_CATEGORIES, TAG_META, topicMeta, type TagCategory } from "@/lib/types";
 import TagChip, { DifficultyBadge } from "@/components/TagChip";
 import VideoCard from "@/components/VideoCard";
 import VideoEmbed from "@/components/VideoEmbed";
@@ -71,7 +71,11 @@ export default async function VideoPage({
               </Link>
               {video.upload_date_fmt && <span>· {video.upload_date_fmt}</span>}
               {video.duration > 0 && <span>· {fmtDuration(video.duration)}</span>}
-              {video.difficulty && <DifficultyBadge difficulty={video.difficulty} />}
+              {video.difficulty && (
+                <Link href={`/?f=difficulty::${encodeURIComponent(video.difficulty)}`} title={`More ${video.difficulty} videos`}>
+                  <DifficultyBadge difficulty={video.difficulty} />
+                </Link>
+              )}
               {!isLost && (
                 <a
                   href={video.url}
@@ -122,11 +126,41 @@ export default async function VideoPage({
               </h3>
               <ul className="flex flex-col gap-1.5">
                 {video.safety.map((s) => (
-                  <li key={s} className="text-sm text-red-200/90 leading-snug">
-                    {s}
+                  <li key={s} className="text-sm leading-snug">
+                    <Link
+                      href={`/?q=${encodeURIComponent(s)}`}
+                      className="text-red-200/90 hover:text-red-100 hover:underline transition-colors"
+                      title={`Find videos tagged: ${s}`}
+                    >
+                      {s}
+                    </Link>
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {video.topics.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-2">
+                Topics
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {video.topics.map((t) => {
+                  const meta = topicMeta(t);
+                  return (
+                    <Link
+                      key={t}
+                      href={`/?f=topic::${encodeURIComponent(t)}`}
+                      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium transition-all duration-100 opacity-80 hover:opacity-100 hover:brightness-125 ${meta.color}`}
+                      title={`More videos: ${meta.label}`}
+                    >
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+                      {meta.label}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -137,7 +171,13 @@ export default async function VideoPage({
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {values.map((t) => (
-                  <TagChip key={t} tag={t} category={cat as TagCategory} size="md" />
+                  <TagChip
+                    key={t}
+                    tag={t}
+                    category={cat as TagCategory}
+                    size="md"
+                    href={`/?f=${cat}::${encodeURIComponent(t)}`}
+                  />
                 ))}
               </div>
             </div>

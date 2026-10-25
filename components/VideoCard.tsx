@@ -102,7 +102,13 @@ export default function VideoCard({ video }: { video: BrowseVideo }) {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-auto pt-1">
             {tags.map(({ t, cat }) => (
-              <TagChip key={`${cat}-${t}`} tag={t} category={cat} />
+              <TagChip
+                key={`${cat}-${t}`}
+                tag={t}
+                category={cat}
+                href={`/?f=${cat}::${encodeURIComponent(t)}`}
+                insideLink
+              />
             ))}
           </div>
         )}

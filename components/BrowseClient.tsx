@@ -173,6 +173,7 @@ export default function BrowseClient({ tagIndex, tagTotals, topics, channels, la
           v.description,
           ...v.topics,
           ...TAG_CATEGORIES.flatMap((c) => v[c] ?? []),
+          ...v.safety,
         ]
           .join(" ")
           .toLowerCase()
